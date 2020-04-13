@@ -82,83 +82,78 @@ catch {
   Write-Log -Level Error -Source 'entrypoint' -Message "Unable to find destination repositories for $searchQuery"
 }
 
-try {
-  $definitions = Get-ChildItem $SourceRepoDiskPath -Filter *.json
+$definitions = Get-ChildItem $SourceRepoDiskPath -Filter *.json
 
-  if (!$definitions) {
-    Write-Log -Level Error -Source 'entrypoint' -Message "Unable to find definitions in $sourceRepoPath"
-  }
-
-  $DesiredRepositoryLabels = @()
-  foreach ($definition in $definitions) {
-    Write-Log -Level INFO -Source 'entrypoint' -Message "Processing definition for desired repo label: $($definition.FullName)"
-    $DesiredRepositoryLabels += ConvertFrom-Json (Get-Content $definition.FullName | Out-String)
-  }
-
-  foreach ($repository in $DestinationRepositories) {
-    Write-Log -Level INFO -Source 'entrypoint' -Message "Processing repository $($repository.name)"
-    try {
-      Write-Log -Level INFO -Source 'entrypoint' -Message "Getting current labels for $($repository.name)"
-      $CurrentRepositoryLabels = Get-GithubRepositoryLabels -repo $repository.name -owner $DestinationRepoOwner -ErrorAction Stop
-    }
-    catch {
-      Write-Log -Level ERROR -Source 'entrypoint' -Message "Unable to get current labels for $($repository.name)"
-    }
-
-    foreach ($DesiredRepositoryLabel in $DesiredRepositoryLabels) {
-      Write-Log -Level INFO -Source 'entrypoint' -Message "Processing label $($desiredRepositoryLabel.name)"
-      # Label already exists?
-      if ($DesiredRepositoryLabel.name -in $CurrentRepositoryLabels.name) {
-        Write-Log -Level INFO -Source 'entrypoint' -Message "Label $($desiredRepositoryLabel.name) already exists, checking colour and description"
-        $labelToValidateAgainst = $CurrentRepositoryLabels | Where-Object { $_.name -eq $DesiredRepositoryLabel.name }
-        if ($labelToValidateAgainst.color -ne $DesiredRepositoryLabel.color.Replace('#', '')) {
-          Write-Log -Level INFO -Source 'entrypoint' -Message "Label $($desiredRepositoryLabel.name) color does not match, currently $($labelToValidateAgainst.color)"
-          $UpdateRequired = $true
-        }
-        if ($labelToValidateAgainst.description -ne $DesiredRepositoryLabel.description) {
-          Write-Log -Level INFO -Source 'entrypoint' -Message "Label $($desiredRepositoryLabel.name) description does not match, currently '$($labelToValidateAgainst.description)'"
-          $UpdateRequired = $true
-        }
-
-        if ($UpdateRequired) {
-          try {
-          Write-Log -Level INFO -Source 'entrypoint' -Message "Label $($desiredRepositoryLabel.name) is being updated"
-          Set-GithubRepositoryLabel -Owner $owner -Repo $repo -Name $DesiredRepositoryLabel.name -Color $DesiredRepositoryLabel.color -Description $DesiredRepositoryLabel.description -ErrorAction Stop
-          }
-          catch {
-            Write-Log -Level Error -Source 'entrypoint' -Message "Label $($desiredRepositoryLabel.name) could not be updated"
-          }
-        }
-      }
-      else {
-        try {
-          Write-Log -Level INFO -Source 'entrypoint' -Message "Label $($desiredRepositoryLabel.name) does not exist, creating"
-          New-GithubRepositoryLabel -Owner $owner -Repo $repo -Name $DesiredRepositoryLabel.name -Color $DesiredRepositoryLabel.color -Description $DesiredRepositoryLabel.description -ErrorAction Stop
-        }
-        catch {
-          Write-Log -Level Error -Source 'entrypoint' -Message "Label $($desiredRepositoryLabel.name) could not be created"
-        }
-      }
-    }
-
-    if ($deleteUnmanaged) {
-      Write-Log -Level INFO -Source 'entrypoint' -Message "Delete mode is enable, unknown labels will be removed"
-      # Now we remove all labels we did not know about...
-      $CurrentRepositoryLabelsToRemove = $CurrentRepositoryLabels | ? { $_.name -notin $DesiredRepositoryLabels.name }
-
-      foreach ($CurrentRepositoryLabelToRemove in $CurrentRepositoryLabelsToRemove) {
-
-        try {
-          Write-Log -Level INFO -Source 'entrypoint' -Message "Deleting unrequired label $($CurrentRepositoryLabelToRemove.name)"
-          Remove-GithubRepositoryLabel -owner $owner -repo $repo -name $CurrentRepositoryLabelToRemove.name -erroraction stop
-        }
-        catch
-        {
-          Write-Log -Level Error -Source 'entrypoint' -Message "Unable to delete label $($CurrentRepositoryLabelToRemove.name)"
-        }
-      }
-    }
-  }
+if (!$definitions) {
+  Write-Log -Level Error -Source 'entrypoint' -Message "Unable to find definitions in $sourceRepoPath"
 }
 
+$DesiredRepositoryLabels = @()
+foreach ($definition in $definitions) {
+  Write-Log -Level INFO -Source 'entrypoint' -Message "Processing definition for desired repo label: $($definition.FullName)"
+  $DesiredRepositoryLabels += ConvertFrom-Json (Get-Content $definition.FullName | Out-String)
+}
+
+foreach ($repository in $DestinationRepositories) {
+  Write-Log -Level INFO -Source 'entrypoint' -Message "Processing repository $($repository.name)"
+  try {
+    Write-Log -Level INFO -Source 'entrypoint' -Message "Getting current labels for $($repository.name)"
+    $CurrentRepositoryLabels = Get-GithubRepositoryLabels -repo $repository.name -owner $DestinationRepoOwner -ErrorAction Stop
+  }
+  catch {
+    Write-Log -Level ERROR -Source 'entrypoint' -Message "Unable to get current labels for $($repository.name)"
+  }
+
+  foreach ($DesiredRepositoryLabel in $DesiredRepositoryLabels) {
+    Write-Log -Level INFO -Source 'entrypoint' -Message "Processing label $($desiredRepositoryLabel.name)"
+    # Label already exists?
+    if ($CurrentRepositoryLabels.name -ccontains $DesiredRepositoryLabel.name) {
+      Write-Log -Level INFO -Source 'entrypoint' -Message "Label $($desiredRepositoryLabel.name) already exists, checking colour and description"
+      $labelToValidateAgainst = $CurrentRepositoryLabels | Where-Object { $_.name -eq $DesiredRepositoryLabel.name }
+      if ($labelToValidateAgainst.color -ne $DesiredRepositoryLabel.color.Replace('#', '')) {
+        Write-Log -Level INFO -Source 'entrypoint' -Message "Label $($desiredRepositoryLabel.name) color does not match, currently $($labelToValidateAgainst.color)"
+        $UpdateRequired = $true
+      }
+      if ($labelToValidateAgainst.description -ne $DesiredRepositoryLabel.description) {
+        Write-Log -Level INFO -Source 'entrypoint' -Message "Label $($desiredRepositoryLabel.name) description does not match, currently '$($labelToValidateAgainst.description)'"
+        $UpdateRequired = $true
+      }
+
+      if ($UpdateRequired) {
+        try {
+          Write-Log -Level INFO -Source 'entrypoint' -Message "Label $($desiredRepositoryLabel.name) is being updated"
+          Set-GithubRepositoryLabel -Owner $owner -Repo $repo -Name $DesiredRepositoryLabel.name -Color $DesiredRepositoryLabel.color -Description $DesiredRepositoryLabel.description -ErrorAction Stop
+        }
+        catch {
+          Write-Log -Level Error -Source 'entrypoint' -Message "Label $($desiredRepositoryLabel.name) could not be updated"
+        }
+      }
+    }
+    else {
+      try {
+        Write-Log -Level INFO -Source 'entrypoint' -Message "Label $($desiredRepositoryLabel.name) does not exist, creating"
+        New-GithubRepositoryLabel -Owner $owner -Repo $repo -Name $DesiredRepositoryLabel.name -Color $DesiredRepositoryLabel.color -Description $DesiredRepositoryLabel.description -ErrorAction Stop
+      }
+      catch {
+        Write-Log -Level Error -Source 'entrypoint' -Message "Label $($desiredRepositoryLabel.name) could not be created"
+      }
+    }
+  }
+
+  if ($deleteUnmanaged) {
+    Write-Log -Level INFO -Source 'entrypoint' -Message "Delete mode is enable, unknown labels will be removed"
+    # Now we remove all labels we did not know about...
+    $CurrentRepositoryLabelsToRemove = $CurrentRepositoryLabels | ? { $_.name -notin $DesiredRepositoryLabels.name }
+
+    foreach ($CurrentRepositoryLabelToRemove in $CurrentRepositoryLabelsToRemove) {
+
+      try {
+        Write-Log -Level INFO -Source 'entrypoint' -Message "Deleting unrequired label $($CurrentRepositoryLabelToRemove.name)"
+        Remove-GithubRepositoryLabel -owner $owner -repo $repo -name $CurrentRepositoryLabelToRemove.name -erroraction stop
+      }
+      catch {
+        Write-Log -Level Error -Source 'entrypoint' -Message "Unable to delete label $($CurrentRepositoryLabelToRemove.name)"
+      }
+    }
+  }
 }
