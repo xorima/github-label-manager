@@ -316,14 +316,18 @@ function Set-GithubRepositoryLabel {
   [String]
   $Name,
   [String]
+  $NewName,
+  [String]
   # American Spelling
   $Color,
   [String]
   $Description
   )
-
+  if (!($NewName)){
+    $NewName = $name
+  }
   $body = @{
-    "new_name" = $name;
+    "new_name" = $NewName;
     "description"= $Description;
     "color" = $Color.replace('#','')
   }

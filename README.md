@@ -26,7 +26,7 @@ Below are a list of variables, what they mean and example values
 | GLM_SOURCE_REPO_PATH | `String` | Yes | The folder inside the Source Repo to find the definitions you wish to have applied |
 | GLM_DESTINATION_REPO_OWNER | `String` | Yes | The owner of the destination repositories you wish to update |
 | GLM_DESTINATION_REPO_TOPICS | `String` | Yes | The topics that the destination repositories are tagged with to search for, Takes a csv, eg: `chef-cookbook,vscode`
-| GLM_DELETE_MODE | `Boolean` | No | Defaults to `0`, Delete all non-matching labels inside the repository
+| GLM_DELETE_MODE | `Boolean` | Yes | Delete all non-matching labels inside the repository, set to `0` to skip, set to `1` to delete
 
 ## Label declaration
 

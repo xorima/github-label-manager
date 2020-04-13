@@ -7,6 +7,7 @@ LABEL org.label-schema.description="A Label Manager system for Github Repositori
 LABEL org.label-schema.url="https://github.com/Xorima/github-label-manager"
 LABEL org.label-schema.vcs-url="https://github.com/Xorima/github-label-manager"
 
+RUN apt-get update && apt-get install -y git
 COPY app /app
 
 ENTRYPOINT ["pwsh", "-file", "app/entrypoint.ps1"]
