@@ -88,7 +88,15 @@ function Get-GithubApiPaginatedResponse {
     $Headers = @{'accept' = 'application/json' }
   )
   $response = Invoke-WebRequest -Method 'GET' -Uri $uri -Headers $headers -UseBasicParsing -ErrorAction Stop
-  $responseItems += ($response.content | ConvertFrom-Json).items
+  $responseJson = ($response.content | ConvertFrom-Json)
+  if ($responseJson.GetType().BaseType.Name -eq 'Array')
+  {
+    $responseItems += $responseJson
+  }
+  else {
+    $responseItems += $responseJson.items
+  }
+
   if ($response.RelationLink.next) {
     Write-Log -Level INFO -Source 'github' -Message "Getting next page of items"
     $responseItems += Get-GithubApiPaginatedResponse -uri $response.RelationLink.next
