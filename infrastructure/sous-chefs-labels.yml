@@ -1,0 +1,33 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: github-label-manager-sous-chefs
+spec:
+  schedule: "0 16 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: github-label-manager
+              image: xorima/github-label-manager:1.0.0
+              env:
+                - name: GITHUB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: xorimabot-github
+                      key: github_token
+                - name: GLM_SOURCE_REPO_OWNER
+                  value: sous-chefs
+                - name: GLM_SOURCE_REPO_NAME
+                  value: repo-management
+                - name: GLM_SOURCE_REPO_PATH
+                  value: "labels/cookbook"
+                - name: GLM_DESTINATION_REPO_OWNER
+                  value: sous-chefs
+                - name: GLM_DESTINATION_REPO_TOPICS
+                  value: "vscode,chef-cookbook"
+                - name: GLM_DELETE_MODE
+                  value: "0"
+          restartPolicy: Never
