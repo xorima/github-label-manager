@@ -27,7 +27,7 @@ spec:
                 - name: GLM_DESTINATION_REPO_OWNER
                   value: sous-chefs
                 - name: GLM_DESTINATION_REPO_TOPICS
-                  value: "vscode,chef-cookbook"
+                  value: "chef-cookbook"
                 - name: GLM_DELETE_MODE
                   value: "0"
           restartPolicy: Never
