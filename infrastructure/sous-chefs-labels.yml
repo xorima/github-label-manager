@@ -11,7 +11,7 @@ spec:
         spec:
           containers:
             - name: github-label-manager
-              image: xorima/github-label-manager:1.0.0
+              image: xorima/github-label-manager:1.0.1
               env:
                 - name: GITHUB_TOKEN
                   valueFrom:
