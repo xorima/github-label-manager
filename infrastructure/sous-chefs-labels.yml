@@ -29,5 +29,5 @@ spec:
                 - name: GLM_DESTINATION_REPO_TOPICS
                   value: "chef-cookbook"
                 - name: GLM_DELETE_MODE
-                  value: "0"
+                  value: "1"
           restartPolicy: Never
