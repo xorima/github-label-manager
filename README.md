@@ -21,12 +21,13 @@ Below are a list of variables, what they mean and example values
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | GITHUB_TOKEN | `String` | Yes | Token to access the github api with, see [Creating a token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) |
+| GITHUB_API_ROOT | `String` | No | Where the api root is for github, defaults to api.github.com (Useful for enterprise users) |
 | GLM_SOURCE_REPO_OWNER | `String` | Yes | The Owner of the repository which holds the desired label definitions |
 | GLM_SOURCE_REPO_NAME | `String` | Yes | The name of the repository which holds the desired label definitions |
 | GLM_SOURCE_REPO_PATH | `String` | Yes | The folder inside the Source Repo to find the definitions you wish to have applied |
 | GLM_DESTINATION_REPO_OWNER | `String` | Yes | The owner of the destination repositories you wish to update |
-| GLM_DESTINATION_REPO_TOPICS | `String` | Yes | The topics that the destination repositories are tagged with to search for, Takes a csv, eg: `chef-cookbook,vscode`
-| GLM_DELETE_MODE | `Boolean` | Yes | Delete all non-matching labels inside the repository, set to `0` to skip, set to `1` to delete
+| GLM_DESTINATION_REPO_TOPICS | `String` | Yes | The topics that the destination repositories are tagged with to search for, Takes a csv, eg: `chef-cookbook,vscode` |
+| GLM_DELETE_MODE | `Boolean` | Yes | Delete all non-matching labels inside the repository, set to `0` to skip, set to `1` to delete |
 
 ## Label declaration
 
