@@ -37,7 +37,10 @@ catch {
 if (!($ENV:GITHUB_TOKEN)) {
   Write-Log -Level Error -Source 'entrypoint' -Message "No GITUB_TOKEN env var detected"
 }
-
+if (!($ENV:GITHUB_API_ROOT)) {
+  Write-Log -Level INFO -Source 'entrypoint' -Message "GITHUB_API_ROOT has been set to api.github.com"
+  $ENV:GITHUB_API_ROOT = 'api.github.com'
+}
 try {
   Write-Log -Level Info -Source 'entrypoint' -Message "Getting repository information for $sourceRepoOwner/$sourceRepoName"
   $SourceRepo = Get-GithubRepository -owner $SourceRepoOwner -repo $SourceRepoName -errorAction Stop
@@ -147,7 +150,7 @@ foreach ($repository in $DestinationRepositories) {
   if ($deleteUnmanaged) {
     Write-Log -Level INFO -Source 'entrypoint' -Message "Delete mode is enable, unknown labels will be removed"
     # Now we remove all labels we did not know about...
-    $CurrentRepositoryLabelsToRemove = $CurrentRepositoryLabels | ? { $_.name -notin $DesiredRepositoryLabels.name }
+    $CurrentRepositoryLabelsToRemove = $CurrentRepositoryLabels | Where-Object { $_.name -notin $DesiredRepositoryLabels.name }
 
     foreach ($CurrentRepositoryLabelToRemove in $CurrentRepositoryLabelsToRemove) {
 
