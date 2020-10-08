@@ -56,8 +56,7 @@ function Invoke-GithubApi {
     $response = Invoke-WebRequest -Method $method -Uri "https://$apiRoot/$endpoint$queryString" -Headers $headers -UseBasicParsing -ErrorAction Stop
     $items = ConvertFrom-Json $response.Content
 
-    # items is a special word in pwsh and using a if resp.items leads to bad results
-    if ($response.RelationLink.next -or ($response.content -like '*"items":*')) {
+    if ($response.RelationLink.next) {
       Write-Log -Level INFO -Source 'github' -Message "Response is Paginated, getting all results"
       return $items.items + (Get-GithubApiPaginatedResponse -uri $response.RelationLink.next -Headers $Headers -ErrorAction Stop)
     }
@@ -68,6 +67,17 @@ function Invoke-GithubApi {
     # }
     else {
       Write-Log -Level INFO -Source 'github' -Message "Returning results object"
+
+      # $items can be 1 of 3 things:
+      # an array or a single item -> we want it
+      # an objects with an array of items -> we want the items
+      # Testing on $item.items first doesn't work as sometimes there's a special property with the wrong values
+      if($items -is [array]) {
+        return $items
+      }
+      if($items.items) {
+        return $items.items
+      }
       return $items
       #return $responseContent
     }
