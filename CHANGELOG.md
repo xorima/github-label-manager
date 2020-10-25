@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Resolved issues with pagination:
+  - Set auth headers correctly
+  - Removed duplicate results from being added
+
 ## 1.0.1
 
 Fixed bug with paging and large numbers of issues
